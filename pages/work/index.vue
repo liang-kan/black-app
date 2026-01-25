@@ -69,6 +69,12 @@
             <text class="text">日志管理</text>
           </view>
         </uni-grid-item>
+        <uni-grid-item>
+          <view class="grid-item-box" @click="goToItems">
+            <uni-icons type="goods-filled" size="30"></uni-icons>
+            <text class="text">物品管理</text>
+          </view>
+        </uni-grid-item>
       </uni-grid>
     </view>
   </view>
@@ -101,6 +107,11 @@
       },
       changeGrid(e) {
         this.$modal.showToast('模块建设中~')
+      },
+      goToItems() {
+        uni.navigateTo({
+          url: '/pages/items/index'
+        })
       }
     }
   }

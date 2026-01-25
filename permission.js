@@ -14,8 +14,8 @@ function checkWhite(url) {
   return whiteList.indexOf(path) !== -1
 }
 
-// 页面跳转验证拦截器
-let list = ["navigateTo", "redirectTo", "reLaunch", "switchTab"]
+// 页面跳转验证拦截器（暂时注释，跳过登录直接进入首页）
+/* let list = ["navigateTo", "redirectTo", "reLaunch", "switchTab"]
 list.forEach(item => {
   uni.addInterceptor(item, {
     invoke(to) {
@@ -36,4 +36,4 @@ list.forEach(item => {
       console.log(err)
     }
   })
-})
+}) */

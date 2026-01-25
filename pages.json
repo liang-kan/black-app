@@ -1,5 +1,31 @@
 {
   "pages": [{
+    "path": "pages/light/index",
+    "style": {
+      "navigationBarTitleText": "灯带管理"
+    }
+  }, {
+    "path": "pages/tv/index",
+    "style": {
+      "navigationBarTitleText": "电视管理"
+    }
+  }, {
+    "path": "pages/stand/index",
+    "style": {
+      "navigationBarTitleText": "脚架管理"
+    }
+  }, {
+    "path": "pages/mine/index",
+    "style": {
+      "navigationBarTitleText": "我的"
+    }
+  }, {
+    "path": "pages/index",
+    "style": {
+      "navigationBarTitleText": "若依移动端框架",
+      "navigationStyle": "custom"
+    }
+  }, {
     "path": "pages/login",
     "style": {
       "navigationBarTitleText": "登录"
@@ -10,20 +36,14 @@
       "navigationBarTitleText": "注册"
     }
   }, {
-    "path": "pages/index",
-    "style": {
-      "navigationBarTitleText": "若依移动端框架",
-      "navigationStyle": "custom"
-    }
-  }, {
     "path": "pages/work/index",
     "style": {
       "navigationBarTitleText": "工作台"
     }
   }, {
-    "path": "pages/mine/index",
+    "path": "pages/items/index",
     "style": {
-      "navigationBarTitleText": "我的"
+      "navigationBarTitleText": "物品管理"
     }
   }, {
     "path": "pages/mine/avatar/index",
@@ -77,15 +97,20 @@
     "borderStyle": "white",
     "backgroundColor": "#ffffff",
     "list": [{
-        "pagePath": "pages/index",
+        "pagePath": "pages/light/index",
         "iconPath": "static/images/tabbar/home.png",
         "selectedIconPath": "static/images/tabbar/home_.png",
-        "text": "首页"
+        "text": "灯带"
       }, {
-        "pagePath": "pages/work/index",
+        "pagePath": "pages/tv/index",
         "iconPath": "static/images/tabbar/work.png",
         "selectedIconPath": "static/images/tabbar/work_.png",
-        "text": "工作台"
+        "text": "电视"
+      }, {
+        "pagePath": "pages/stand/index",
+        "iconPath": "static/images/tabbar/mine.png",
+        "selectedIconPath": "static/images/tabbar/mine_.png",
+        "text": "脚架"
       }, {
         "pagePath": "pages/mine/index",
         "iconPath": "static/images/tabbar/mine.png",
