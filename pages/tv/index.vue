@@ -1,161 +1,189 @@
 <template>
   <view class="tv-container">
-    <view class="page-title">电视库存管理</view>
-    
-    <!-- 高级筛选区域 -->
-    <uni-card class="filter-card">
-      <view class="filter-header" @click="toggleFilter">
-        <text class="filter-title">高级筛选</text>
-        <uni-icons :type="showFilter ? 'arrowup' : 'arrowdown'" size="20"></uni-icons>
+    <!-- 顶部导航 -->
+    <view class="header">
+      <view class="title">电视库存管理</view>
+      <view class="header-actions">
+        <uni-icons type="ellipsis" size="24"></uni-icons>
+        <uni-icons type="eye" size="24"></uni-icons>
       </view>
-      
-      <!-- 筛选条件（可折叠） -->
-      <view v-if="showFilter" class="filter-content">
-        <uni-row>
-          <uni-col :span="8">
-            <uni-forms-item label="品牌">
-              <uni-data-select 
-                :localdata="brands" 
-                v-model="filterForm.brand" 
-                placeholder="请选择品牌"
-              />
-            </uni-forms-item>
-          </uni-col>
-          <uni-col :span="8">
-            <uni-forms-item label="分辨率">
-              <uni-data-select 
-                :localdata="resolutions" 
-                v-model="filterForm.resolution" 
-                placeholder="请选择分辨率"
-              />
-            </uni-forms-item>
-          </uni-col>
-          <uni-col :span="8">
-            <uni-forms-item label="面板类型">
-              <uni-data-select 
-                :localdata="panelTypes" 
-                v-model="filterForm.panel_type" 
-                placeholder="请选择面板类型"
-              />
-            </uni-forms-item>
-          </uni-col>
-        </uni-row>
-        
-        <uni-row>
-          <uni-col :span="8">
-            <uni-forms-item label="屏幕尺寸">
-              <view class="size-range">
-                <uni-easyinput v-model="filterForm.minSize" placeholder="最小尺寸" type="number" />
-                <text class="range-separator">-</text>
-                <uni-easyinput v-model="filterForm.maxSize" placeholder="最大尺寸" type="number" />
-              </view>
-            </uni-forms-item>
-          </uni-col>
-          <uni-col :span="8">
-            <uni-forms-item label="能效等级">
-              <uni-data-select 
-                :localdata="energyRatings" 
-                v-model="filterForm.energy_rating" 
-                placeholder="请选择能效等级"
-              />
-            </uni-forms-item>
-          </uni-col>
-          <uni-col :span="8">
-            <uni-forms-item label="状态">
-              <uni-data-select 
-                :localdata="statusList" 
-                v-model="filterForm.status" 
-                placeholder="请选择状态"
-              />
-            </uni-forms-item>
-          </uni-col>
-        </uni-row>
-        
-        <view class="filter-actions">
-          <uni-button type="primary" @click="search">查询</uni-button>
-          <uni-button type="default" @click="resetFilter">重置</uni-button>
-        </view>
-      </view>
-    </uni-card>
-    
-    <!-- 搜索框 -->
-    <view class="search-bar">
-      <uni-search-bar 
-        v-model="searchKeyword" 
-        placeholder="搜索电视名称、型号"
-        @confirm="onSearch"
-      />
     </view>
     
-    <!-- 电视库存列表 -->
-    <uni-card class="list-card">
-      <template v-if="tvList.length > 0">
-        <uni-list>
-          <uni-list-item 
-            v-for="tv in tvList" 
-            :key="tv.id"
-            class="tv-item"
-          >
-            <template #header>
-              <view class="tv-header">
-                <text class="tv-name">{{ tv.name }}</text>
-                <text :class="['tv-status', tv.status === 1 ? 'status-normal' : 'status-off']">
-                  {{ tv.status === 1 ? '正常' : '下架' }}
-                </text>
-              </view>
-            </template>
-            <view class="tv-info">
-              <view class="info-row">
-                <text class="info-label">品牌：</text>
-                <text class="info-value">{{ tv.brand }}</text>
-                <text class="info-label">型号：</text>
-                <text class="info-value">{{ tv.model }}</text>
-              </view>
-              <view class="info-row">
-                <text class="info-label">屏幕尺寸：</text>
-                <text class="info-value">{{ tv.screen_size }}英寸</text>
-                <text class="info-label">分辨率：</text>
-                <text class="info-value">{{ tv.resolution }}</text>
-              </view>
-              <view class="info-row">
-                <text class="info-label">面板类型：</text>
-                <text class="info-value">{{ tv.panel_type }}</text>
-                <text class="info-label">能效等级：</text>
-                <text class="info-value">{{ tv.energy_rating }}</text>
-              </view>
-              <view class="info-row">
-                <text class="info-label">库存数量：</text>
-                <text class="info-value stock-quantity">{{ tv.stock_quantity }}</text>
-                <text class="info-label">单价：</text>
-                <text class="info-value price">¥{{ tv.unit_price.toFixed(2) }}</text>
-              </view>
-              <view class="info-row">
-                <text class="info-label">仓库位置：</text>
-                <text class="info-value">{{ tv.warehouse_location }}</text>
-                <text class="info-label">接口信息：</text>
-                <text class="info-value">{{ tv.port_info }}</text>
-              </view>
-            </view>
-          </uni-list-item>
-        </uni-list>
+    <!-- 筛选区域 -->
+    <view class="filter-section">
+      <view class="filter-card">
+        <view class="filter-header">
+          <text class="filter-title">筛选条</text>
+        </view>
         
-        <!-- 分页组件 -->
-        <view class="pagination">
-          <uni-pagination 
-            :current="currentPage" 
-            :page-size="pageSize" 
-            :total="totalCount" 
-            @change="onPageChange"
-          />
+        <!-- 固定显示的品牌和型号筛选 -->
+        <view class="filter-row">
+          <uni-data-select 
+            v-model="filters.brand" 
+            :localdata="brandOptions" 
+            placeholder="请选择品牌"
+            @change="onFilterChange"
+            class="filter-select"
+          ></uni-data-select>
         </view>
-      </template>
-      <template v-else>
-        <view class="empty-list">
-          <uni-icons type="image" size="60" color="#ccc"></uni-icons>
-          <text class="empty-text">暂无电视库存数据</text>
+        
+        <view class="filter-row">
+          <uni-easyinput 
+            v-model="filters.model" 
+            placeholder="型号: 请输入型号"
+            @input="onFilterChange"
+            class="filter-input"
+          ></uni-easyinput>
         </view>
-      </template>
-    </uni-card>
+        
+        <!-- 更多筛选按钮 -->
+        <view class="filter-row">
+          <button class="more-filter-btn" @click="toggleAdvancedFilter">更多筛选</button>
+        </view>
+        
+        <!-- 可折叠的高级筛选 -->
+        <view class="advanced-filter" v-show="showAdvancedFilter">
+          <view class="filter-row">
+            <view class="filter-item">
+              <text class="filter-label">分辨率：</text>
+              <uni-data-select 
+                v-model="filters.resolution" 
+                :localdata="resolutionOptions" 
+                placeholder="请选择分辨率"
+                @change="onFilterChange"
+                class="filter-select"
+              ></uni-data-select>
+            </view>
+            <view class="filter-item">
+              <text class="filter-label">面板类型：</text>
+              <uni-data-select 
+                v-model="filters.panel_type" 
+                :localdata="panelTypeOptions" 
+                placeholder="请选择面板类型"
+                @change="onFilterChange"
+                class="filter-select"
+              ></uni-data-select>
+            </view>
+          </view>
+          <view class="filter-row">
+            <view class="filter-item">
+              <text class="filter-label">能效等级：</text>
+              <uni-data-select 
+                v-model="filters.energy_rating" 
+                :localdata="energyRatingOptions" 
+                placeholder="请选择能效等级"
+                @change="onFilterChange"
+                class="filter-select"
+              ></uni-data-select>
+            </view>
+            <view class="filter-item">
+              <text class="filter-label">状态：</text>
+              <uni-data-select 
+                v-model="filters.status" 
+                :localdata="statusOptions" 
+                placeholder="请选择状态"
+                @change="onFilterChange"
+                class="filter-select"
+              ></uni-data-select>
+            </view>
+          </view>
+        </view>
+        
+        <!-- 筛选按钮 -->
+        <view class="filter-actions">
+          <button class="reset-btn" @click="resetFilters">重置</button>
+          <button class="search-btn" @click="searchTvs">搜索</button>
+        </view>
+      </view>
+    </view>
+    
+    <!-- 结果统计 -->
+    <view class="result-info">
+      <text>共找到 {{ filteredTvs.length }} 条记录</text>
+    </view>
+    
+    <!-- 电视列表 -->
+    <view class="tvs-list">
+      <view class="tv-card" v-for="(tv, index) in filteredTvs" :key="tv.id">
+        <view class="tv-header">
+          <text class="tv-name">{{ tv.name }}</text>
+          <uni-tag :type="tv.status === 1 ? 'success' : 'error'" :text="tv.status === 1 ? '正常' : '下架'" class="stock-tag"></uni-tag>
+        </view>
+        <text class="tv-model">{{ tv.brand }} {{ tv.model }}</text>
+        
+        <view class="tv-content">
+          <view class="tv-image">
+            <image :src="tv.image" mode="aspectFill" :draggable="false"></image>
+          </view>
+          
+          <view class="tv-info">
+            <view class="info-row">
+              <text class="info-label">分辨率: </text>
+              <text class="info-value">{{ tv.resolution }}</text>
+            </view>
+            <view class="info-row">
+              <text class="info-label">面板类型: </text>
+              <text class="info-value">{{ tv.panel_type }}</text>
+            </view>
+            <view class="info-row">
+              <text class="info-label">屏幕尺寸: </text>
+              <text class="info-value">{{ tv.screen_size }} 英寸</text>
+            </view>
+            <view class="info-row">
+              <text class="info-label">接口信息: </text>
+              <text class="info-value">{{ tv.port_info }}</text>
+            </view>
+          </view>
+        </view>
+        
+        <view class="tv-specs">
+          <view class="spec-item">
+            <text class="spec-label">能效等级</text>
+            <text class="spec-value">{{ tv.energy_rating }}</text>
+          </view>
+          <view class="spec-item">
+            <text class="spec-label">仓库位置</text>
+            <text class="spec-value">{{ tv.warehouse_location }}</text>
+          </view>
+          <view class="spec-item">
+            <text class="spec-label">状态</text>
+            <uni-tag :type="tv.status === 1 ? 'success' : 'error'" :text="tv.status === 1 ? '正常' : '下架'"></uni-tag>
+          </view>
+        </view>
+        
+        <view class="tv-footer">
+          <view class="stock-info">
+            <text class="stock-text">库存: {{ tv.stock_quantity }} 件</text>
+            <text class="price-text">价格: ¥ {{ tv.unit_price.toFixed(2) }}</text>
+          </view>
+          
+          <button 
+            class="edit-stock-btn" 
+            @click="reduceStock(tv)"
+            :disabled="tv.stock_quantity <= 0"
+          >
+            编辑库存
+          </button>
+        </view>
+      </view>
+    </view>
+    
+    <!-- 空状态 -->
+    <view v-if="filteredTvs.length === 0" class="empty-state">
+      <uni-icons type="empty" size="60" color="#ccc"></uni-icons>
+      <text class="empty-text">暂无符合条件的电视</text>
+      <button class="reset-btn" @click="resetFilters">清除筛选条件</button>
+    </view>
+    
+    <!-- 分页 -->
+    <view v-if="filteredTvs.length > 0" class="pagination">
+      <uni-pagination 
+        :total="filteredTvs.length" 
+        :current="currentPage" 
+        :page-size="pageSize"
+        @change="onPageChange"
+      ></uni-pagination>
+    </view>
   </view>
 </template>
 
@@ -163,61 +191,55 @@
 export default {
   data() {
     return {
-      // 筛选相关
-      showFilter: false,
-      filterForm: {
+      // 筛选条件
+      filters: {
         brand: '',
+        model: '',
         resolution: '',
         panel_type: '',
-        minSize: '',
-        maxSize: '',
         energy_rating: '',
         status: ''
       },
-      searchKeyword: '',
-      
-      // 分页相关
+      // 高级筛选展开状态
+      showAdvancedFilter: false,
+      // 筛选选项
+      brandOptions: [
+        { text: '三星', value: 'Samsung' },
+        { text: 'LG', value: 'LG' },
+        { text: '索尼', value: 'Sony' },
+        { text: 'TCL', value: 'TCL' },
+        { text: '海信', value: 'Hisense' },
+        { text: '创维', value: 'Skyworth' }
+      ],
+      resolutionOptions: [
+        { text: '4K', value: '4K' },
+        { text: '1080P', value: '1080P' },
+        { text: '8K', value: '8K' },
+        { text: '720P', value: '720P' }
+      ],
+      panelTypeOptions: [
+        { text: 'OLED', value: 'OLED' },
+        { text: 'LCD', value: 'LCD' },
+        { text: 'QLED', value: 'QLED' },
+        { text: 'Mini-LED', value: 'Mini-LED' }
+      ],
+      energyRatingOptions: [
+        { text: 'A+++', value: 'A+++' },
+        { text: 'A++', value: 'A++' },
+        { text: 'A+', value: 'A+' },
+        { text: 'A', value: 'A' },
+        { text: 'B', value: 'B' },
+        { text: 'C', value: 'C' }
+      ],
+      statusOptions: [
+        { text: '正常', value: '1' },
+        { text: '下架', value: '0' }
+      ],
+      // 分页参数
       currentPage: 1,
       pageSize: 10,
-      totalCount: 0,
-      tvList: [],
-      
-      // 静态数据
-      brands: [
-        { value: 'Samsung', text: '三星' },
-        { value: 'LG', text: 'LG' },
-        { value: 'Sony', text: '索尼' },
-        { value: 'TCL', text: 'TCL' },
-        { value: 'Hisense', text: '海信' },
-        { value: 'Skyworth', text: '创维' }
-      ],
-      resolutions: [
-        { value: '4K', text: '4K' },
-        { value: '1080P', text: '1080P' },
-        { value: '8K', text: '8K' },
-        { value: '720P', text: '720P' }
-      ],
-      panelTypes: [
-        { value: 'OLED', text: 'OLED' },
-        { value: 'LCD', text: 'LCD' },
-        { value: 'QLED', text: 'QLED' },
-        { value: 'Mini-LED', text: 'Mini-LED' }
-      ],
-      energyRatings: [
-        { value: 'A+++', text: 'A+++' },
-        { value: 'A++', text: 'A++' },
-        { value: 'A+', text: 'A+' },
-        { value: 'A', text: 'A' },
-        { value: 'B', text: 'B' },
-        { value: 'C', text: 'C' }
-      ],
-      statusList: [
-        { value: '1', text: '正常' },
-        { value: '0', text: '下架' }
-      ],
-      
-      // 模拟电视库存数据
-      mockTvData: [
+      // 电视数据
+      tvs: [
         {
           id: 1,
           name: '三星智能电视',
@@ -231,7 +253,8 @@ export default {
           stock_quantity: 50,
           unit_price: 5999.00,
           warehouse_location: 'A-12-3',
-          status: 1
+          status: 1,
+          image: 'https://cdn.pixabay.com/photo/2017/01/24/03/53/tv-1995437_1280.png'
         },
         {
           id: 2,
@@ -246,7 +269,8 @@ export default {
           stock_quantity: 30,
           unit_price: 6999.00,
           warehouse_location: 'A-12-4',
-          status: 1
+          status: 1,
+          image: 'https://cdn.pixabay.com/photo/2016/11/18/16/16/tv-1835431_1280.jpg'
         },
         {
           id: 3,
@@ -261,7 +285,8 @@ export default {
           stock_quantity: 25,
           unit_price: 7999.00,
           warehouse_location: 'A-13-1',
-          status: 1
+          status: 1,
+          image: 'https://cdn.pixabay.com/photo/2016/09/08/20/01/television-1654367_1280.jpg'
         },
         {
           id: 4,
@@ -276,7 +301,8 @@ export default {
           stock_quantity: 40,
           unit_price: 4999.00,
           warehouse_location: 'A-13-2',
-          status: 1
+          status: 1,
+          image: 'https://cdn.pixabay.com/photo/2020/10/09/19/10/smart-tv-5640322_1280.jpg'
         },
         {
           id: 5,
@@ -291,7 +317,8 @@ export default {
           stock_quantity: 35,
           unit_price: 5499.00,
           warehouse_location: 'A-14-1',
-          status: 1
+          status: 1,
+          image: 'https://cdn.pixabay.com/photo/2016/01/09/18/27/old-1130743_1280.jpg'
         },
         {
           id: 6,
@@ -306,7 +333,8 @@ export default {
           stock_quantity: 10,
           unit_price: 19999.00,
           warehouse_location: 'B-01-1',
-          status: 1
+          status: 1,
+          image: 'https://cdn.pixabay.com/photo/2019/03/27/07/43/entertainment-4083169_1280.jpg'
         },
         {
           id: 7,
@@ -321,7 +349,8 @@ export default {
           stock_quantity: 15,
           unit_price: 12999.00,
           warehouse_location: 'B-01-2',
-          status: 1
+          status: 1,
+          image: 'https://cdn.pixabay.com/photo/2016/11/18/16/16/tv-1835431_1280.jpg'
         },
         {
           id: 8,
@@ -336,7 +365,8 @@ export default {
           stock_quantity: 20,
           unit_price: 4499.00,
           warehouse_location: 'B-02-1',
-          status: 1
+          status: 1,
+          image: 'https://cdn.pixabay.com/photo/2019/03/27/07/43/entertainment-4083169_1280.jpg'
         },
         {
           id: 9,
@@ -351,7 +381,8 @@ export default {
           stock_quantity: 60,
           unit_price: 1999.00,
           warehouse_location: 'C-01-1',
-          status: 1
+          status: 1,
+          image: 'https://cdn.pixabay.com/photo/2016/09/08/20/01/television-1654367_1280.jpg'
         },
         {
           id: 10,
@@ -366,7 +397,8 @@ export default {
           stock_quantity: 45,
           unit_price: 2999.00,
           warehouse_location: 'C-01-2',
-          status: 1
+          status: 1,
+          image: 'https://cdn.pixabay.com/photo/2020/10/09/19/10/smart-tv-5640322_1280.jpg'
         },
         {
           id: 11,
@@ -381,7 +413,8 @@ export default {
           stock_quantity: 20,
           unit_price: 8999.00,
           warehouse_location: 'B-02-2',
-          status: 1
+          status: 1,
+          image: 'https://cdn.pixabay.com/photo/2016/01/09/18/27/old-1130743_1280.jpg'
         },
         {
           id: 12,
@@ -396,201 +429,272 @@ export default {
           stock_quantity: 8,
           unit_price: 14999.00,
           warehouse_location: 'B-03-1',
-          status: 1
+          status: 1,
+          image: 'https://cdn.pixabay.com/photo/2019/03/27/07/43/entertainment-4083169_1280.jpg'
         }
       ]
     };
   },
   computed: {
-    // 总数据量
-    totalCount() {
-      return this.mockTvData.length;
-    }
-  },
-  mounted() {
-    // 初始化加载数据
-    this.loadTvData();
-  },
-  methods: {
-    // 切换筛选面板
-    toggleFilter() {
-      this.showFilter = !this.showFilter;
-    },
-    
-    // 重置筛选条件
-    resetFilter() {
-      this.filterForm = {
-        brand: '',
-        resolution: '',
-        panel_type: '',
-        minSize: '',
-        maxSize: '',
-        energy_rating: '',
-        status: ''
-      };
-      this.searchKeyword = '';
-      this.currentPage = 1;
-      this.loadTvData();
-    },
-    
-    // 执行搜索
-    search() {
-      this.currentPage = 1;
-      this.loadTvData();
-    },
-    
-    // 关键词搜索
-    onSearch() {
-      this.currentPage = 1;
-      this.loadTvData();
-    },
-    
-    // 分页变化
-    onPageChange(e) {
-      this.currentPage = e.current;
-      this.pageSize = e.pageSize;
-      this.loadTvData();
-    },
-    
-    // 加载电视数据（带筛选和分页）
-    loadTvData() {
-      // 应用筛选条件
-      let filteredData = [...this.mockTvData];
-      
-      // 关键词搜索
-      if (this.searchKeyword) {
-        const keyword = this.searchKeyword.toLowerCase();
-        filteredData = filteredData.filter(item => 
-          item.name.toLowerCase().includes(keyword) ||
-          item.model.toLowerCase().includes(keyword)
-        );
-      }
+    // 过滤后的电视数据
+    filteredTvs() {
+      let result = [...this.tvs];
       
       // 品牌筛选
-      if (this.filterForm.brand) {
-        filteredData = filteredData.filter(item => 
-          item.brand === this.filterForm.brand
-        );
+      if (this.filters.brand) {
+        result = result.filter(tv => tv.brand === this.filters.brand);
+      }
+      
+      // 型号筛选
+      if (this.filters.model) {
+        const model = this.filters.model.toLowerCase();
+        result = result.filter(tv => tv.model.toLowerCase().includes(model));
       }
       
       // 分辨率筛选
-      if (this.filterForm.resolution) {
-        filteredData = filteredData.filter(item => 
-          item.resolution === this.filterForm.resolution
-        );
+      if (this.filters.resolution) {
+        result = result.filter(tv => tv.resolution === this.filters.resolution);
       }
       
       // 面板类型筛选
-      if (this.filterForm.panel_type) {
-        filteredData = filteredData.filter(item => 
-          item.panel_type === this.filterForm.panel_type
-        );
-      }
-      
-      // 屏幕尺寸筛选
-      if (this.filterForm.minSize) {
-        filteredData = filteredData.filter(item => 
-          item.screen_size >= parseFloat(this.filterForm.minSize)
-        );
-      }
-      if (this.filterForm.maxSize) {
-        filteredData = filteredData.filter(item => 
-          item.screen_size <= parseFloat(this.filterForm.maxSize)
-        );
+      if (this.filters.panel_type) {
+        result = result.filter(tv => tv.panel_type === this.filters.panel_type);
       }
       
       // 能效等级筛选
-      if (this.filterForm.energy_rating) {
-        filteredData = filteredData.filter(item => 
-          item.energy_rating === this.filterForm.energy_rating
-        );
+      if (this.filters.energy_rating) {
+        result = result.filter(tv => tv.energy_rating === this.filters.energy_rating);
       }
       
       // 状态筛选
-      if (this.filterForm.status) {
-        filteredData = filteredData.filter(item => 
-          item.status === parseInt(this.filterForm.status)
-        );
+      if (this.filters.status) {
+        result = result.filter(tv => tv.status === parseInt(this.filters.status));
       }
       
-      // 更新总数据量
-      this.totalCount = filteredData.length;
-      
-      // 应用分页
-      const startIndex = (this.currentPage - 1) * this.pageSize;
-      const endIndex = startIndex + this.pageSize;
-      this.tvList = filteredData.slice(startIndex, endIndex);
+      return result;
+    }
+  },
+  methods: {
+    // 筛选条件变化
+    onFilterChange() {
+      this.currentPage = 1;
+    },
+    
+    // 搜索电视
+    searchTvs() {
+      console.log('搜索电视:', this.filters);
+      // 这里可以添加搜索逻辑，目前直接使用计算属性过滤
+    },
+    
+    // 重置筛选条件
+    resetFilters() {
+      this.filters = {
+        brand: '',
+        model: '',
+        resolution: '',
+        panel_type: '',
+        energy_rating: '',
+        status: ''
+      };
+      this.currentPage = 1;
+    },
+    
+    // 切换高级筛选展开状态
+    toggleAdvancedFilter() {
+      this.showAdvancedFilter = !this.showAdvancedFilter;
+    },
+    
+    // 减少库存
+    reduceStock(tv) {
+      if (tv.stock_quantity > 0) {
+        tv.stock_quantity--;
+        this.$modal.showToast('库存已减少');
+      }
+    },
+    
+    // 页码变化
+    onPageChange(e) {
+      this.currentPage = e.current;
     }
   }
 };
 </script>
 
 <style scoped>
+/* 全局样式 */
 .tv-container {
-  padding: 20rpx;
+  padding: 0;
   background-color: #f5f5f5;
   min-height: 100vh;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 }
 
-.page-title {
-  font-size: 36rpx;
-  font-weight: bold;
-  margin-bottom: 20rpx;
-  text-align: center;
-  color: #333;
-}
-
-.filter-card {
-  margin-bottom: 20rpx;
-}
-
-.filter-header {
+/* 顶部导航 */
+.header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10rpx 0;
-  cursor: pointer;
+  padding: 20rpx 30rpx;
+  background-color: #ffffff;
+  box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.05);
+}
+
+.title {
+  font-size: 36rpx;
+  font-weight: bold;
+  color: #333333;
+}
+
+.header-actions {
+  display: flex;
+  gap: 20rpx;
+}
+
+/* 筛选区域 */
+.filter-section {
+  padding: 20rpx;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 0 0 20rpx 20rpx;
+}
+
+.filter-card {
+  background-color: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10rpx);
+  border-radius: 20rpx;
+  padding: 20rpx;
+}
+
+.filter-header {
+  margin-bottom: 20rpx;
 }
 
 .filter-title {
-  font-size: 28rpx;
+  font-size: 32rpx;
   font-weight: bold;
-  color: #333;
+  color: #ffffff;
 }
 
-.filter-content {
-  padding: 20rpx 0;
+.filter-row {
+  display: flex;
+  margin-bottom: 20rpx;
 }
 
-.size-range {
+.filter-item {
+  flex: 1;
   display: flex;
   align-items: center;
   gap: 10rpx;
 }
 
-.range-separator {
-  color: #666;
+.filter-label {
+  font-size: 28rpx;
+  color: #ffffff;
+  min-width: 100rpx;
+}
+
+.filter-select {
+  flex: 1;
+  background-color: #ffffff;
+  border-radius: 10rpx;
+  padding: 15rpx;
+  font-size: 28rpx;
+}
+
+.filter-input {
+  flex: 1;
+  background-color: #ffffff;
+  border-radius: 10rpx;
+  padding: 15rpx;
+  font-size: 28rpx;
+}
+
+.more-filter-btn {
+  flex: 1;
+  background-color: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  border: 2rpx solid rgba(255, 255, 255, 0.3);
+  border-radius: 10rpx;
+  padding: 15rpx;
+  font-size: 28rpx;
+  text-align: center;
+}
+
+.advanced-filter {
+  margin: 20rpx 0;
+  padding: 20rpx;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 10rpx;
 }
 
 .filter-actions {
   display: flex;
-  justify-content: flex-end;
-  gap: 10rpx;
+  gap: 20rpx;
   margin-top: 20rpx;
 }
 
-.search-bar {
-  margin-bottom: 20rpx;
+.reset-btn {
+  flex: 1;
+  background-color: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  border: 2rpx solid rgba(255, 255, 255, 0.3);
+  border-radius: 15rpx;
+  padding: 15rpx;
+  font-size: 28rpx;
+  font-weight: 500;
+  text-align: center;
+  transition: all 0.3s ease;
 }
 
-.list-card {
-  min-height: 500rpx;
+.search-btn {
+  flex: 1;
+  background-color: #ffffff;
+  color: #667eea;
+  border: none;
+  border-radius: 15rpx;
+  padding: 15rpx;
+  font-size: 28rpx;
+  font-weight: 500;
+  text-align: center;
+  transition: all 0.3s ease;
+  box-shadow: 0 4rpx 15rpx rgba(0, 0, 0, 0.1);
 }
 
-.tv-item {
-  margin-bottom: 10rpx;
-  border-bottom: 1rpx solid #eee;
-  padding-bottom: 10rpx;
+.search-btn:active {
+  transform: scale(0.95);
+}
+
+.reset-btn:active {
+  transform: scale(0.95);
+}
+
+/* 结果统计 */
+.result-info {
+  margin: 20rpx;
+  font-size: 28rpx;
+  color: #666666;
+  text-align: center;
+}
+
+/* 电视列表 */
+.tvs-list {
+  padding: 0 20rpx 20rpx 20rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+}
+
+/* 电视卡片 */
+.tv-card {
+  background-color: #ffffff;
+  border-radius: 20rpx;
+  padding: 20rpx;
+  box-shadow: 0 4rpx 15rpx rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+}
+
+.tv-card:active {
+  transform: translateY(2rpx);
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.05);
 }
 
 .tv-header {
@@ -601,77 +705,155 @@ export default {
 }
 
 .tv-name {
-  font-size: 28rpx;
+  font-size: 32rpx;
   font-weight: bold;
-  color: #333;
+  color: #333333;
+  flex: 1;
 }
 
-.tv-status {
+.tv-model {
+  font-size: 26rpx;
+  color: #666666;
+  margin-bottom: 20rpx;
+}
+
+.stock-tag {
   font-size: 24rpx;
   padding: 4rpx 12rpx;
-  border-radius: 12rpx;
 }
 
-.status-normal {
-  background-color: #e6f7ee;
-  color: #52c41a;
+/* 电视内容 */
+.tv-content {
+  display: flex;
+  gap: 20rpx;
+  margin-bottom: 20rpx;
 }
 
-.status-off {
-  background-color: #fff2e8;
-  color: #fa8c16;
+.tv-image {
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: 10rpx;
+  overflow: hidden;
+  background-color: #f5f5f5;
+}
+
+.tv-image image {
+  width: 100%;
+  height: 100%;
 }
 
 .tv-info {
-  margin-top: 10rpx;
+  flex: 1;
 }
 
 .info-row {
   display: flex;
-  flex-wrap: wrap;
-  margin-bottom: 8rpx;
-  gap: 20rpx;
+  margin-bottom: 10rpx;
+  font-size: 26rpx;
 }
 
 .info-label {
-  font-size: 24rpx;
-  color: #666;
-  white-space: nowrap;
+  color: #666666;
+  min-width: 120rpx;
 }
 
 .info-value {
-  font-size: 24rpx;
-  color: #333;
-  white-space: nowrap;
+  color: #333333;
+  font-weight: 500;
 }
 
-.stock-quantity {
-  color: #1890ff;
-  font-weight: bold;
-}
-
-.price {
-  color: #ff4d4f;
-  font-weight: bold;
-}
-
-.pagination {
-  margin-top: 30rpx;
+/* 电视规格 */
+.tv-specs {
   display: flex;
-  justify-content: center;
+  gap: 20rpx;
+  margin-bottom: 20rpx;
+  padding: 15rpx;
+  background-color: #f9f9f9;
+  border-radius: 10rpx;
 }
 
-.empty-list {
+.spec-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.spec-label {
+  font-size: 24rpx;
+  color: #666666;
+  margin-bottom: 5rpx;
+}
+
+.spec-value {
+  font-size: 28rpx;
+  font-weight: bold;
+  color: #333333;
+}
+
+/* 电视底部 */
+.tv-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 15rpx;
+  border-top: 1rpx solid #f0f0f0;
+}
+
+.stock-info {
+  display: flex;
+  gap: 30rpx;
+  flex: 1;
+}
+
+.stock-text {
+  font-size: 28rpx;
+  font-weight: bold;
+  color: #07c160;
+}
+
+.price-text {
+  font-size: 28rpx;
+  font-weight: bold;
+  color: #ff3b30;
+}
+
+.edit-stock-btn {
+  background-color: #667eea;
+  color: white;
+  border: none;
+  border-radius: 10rpx;
+  padding: 15rpx 30rpx;
+  font-size: 26rpx;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.edit-stock-btn:disabled {
+  background-color: #cccccc;
+  color: #ffffff;
+}
+
+/* 空状态 */
+.empty-state {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   padding: 100rpx 0;
-  color: #ccc;
+  color: #999999;
 }
 
 .empty-text {
-  margin-top: 20rpx;
-  font-size: 24rpx;
+  margin: 30rpx 0;
+  font-size: 32rpx;
+}
+
+/* 分页 */
+.pagination {
+  margin-top: 40rpx;
+  display: flex;
+  justify-content: center;
+  padding: 20rpx;
 }
 </style>

@@ -13,10 +13,7 @@
     <view class="filter-section">
       <view class="filter-card">
         <view class="filter-header">
-          <text class="filter-title">筛选条件</text>
-          <view class="filter-toggle" @click="toggleAdvancedFilter">
-            <uni-icons :type="showAdvancedFilter ? 'grid' : 'list'" size="24"></uni-icons>
-          </view>
+          <text class="filter-title">筛选条</text>
         </view>
         
         <!-- 固定显示的品牌和型号筛选 -->
@@ -31,13 +28,17 @@
         </view>
         
         <view class="filter-row">
-          <text class="filter-label">型号:</text>
           <uni-easyinput 
             v-model="filters.model_number" 
-            placeholder="请输入型号"
+            placeholder="型号: 请输入型号"
             @input="onFilterChange"
             class="filter-input"
           ></uni-easyinput>
+        </view>
+        
+        <!-- 更多筛选按钮 -->
+        <view class="filter-row">
+          <button class="more-filter-btn" @click="toggleAdvancedFilter">更多筛选</button>
         </view>
         
         <!-- 可折叠的高级筛选 -->
@@ -106,8 +107,9 @@
       <view class="light-card" v-for="(light, index) in filteredLights" :key="light.id">
         <view class="light-header">
           <text class="light-name">{{ light.product_name }}</text>
-          <text class="light-model">{{ light.brand }} {{ light.model_number }}</text>
+          <uni-tag :type="light.stock_quantity > 0 ? 'success' : 'error'" :text="light.stock_quantity > 0 ? '有货' : '缺货'" class="stock-tag"></uni-tag>
         </view>
+        <text class="light-model">{{ light.brand }} {{ light.model_number }}</text>
         
         <view class="light-content">
           <view class="light-image">
@@ -132,7 +134,7 @@
         
         <view class="light-specs">
           <view class="spec-item">
-            <text class="spec-label">长度: </text>
+            <text class="spec-label">长度:</text>
             <text class="spec-value">{{ light.length_mm }} mm</text>
           </view>
           <view class="spec-item">
@@ -140,36 +142,24 @@
             <text class="spec-value">{{ light.input_voltage_v }} V</text>
           </view>
           <view class="spec-item">
-            <text class="spec-label">可裁剪: </text>
+            <text class="spec-label">可裁剪:</text>
             <text class="spec-value">{{ light.cuttable ? '是' : '否' }}</text>
           </view>
         </view>
         
         <view class="light-footer">
           <view class="stock-info">
-            <view class="stock-item">
-              <text class="stock-label">库存: </text>
-              <text class="stock-value">{{ light.stock_quantity }} 件</text>
-            </view>
-            <view class="stock-item">
-              <text class="stock-label">价格: </text>
-              <text class="stock-value price">{{ light.currency }} {{ light.price }}</text>
-            </view>
+            <text class="stock-text">库存: {{ light.stock_quantity }} 件</text>
+            <text class="price-text">价格: {{ light.currency }} {{ light.price }}</text>
           </view>
           
-          <view class="light-actions">
-            <button 
-              class="reduce-stock-btn" 
-              @click="reduceStock(light)"
-              :disabled="light.stock_quantity <= 0"
-            >
-              减少库存
-            </button>
-            <uni-tag 
-              :type="light.stock_quantity > 0 ? 'success' : 'error'" 
-              :text="light.stock_quantity > 0 ? '有货' : '缺货'"
-            ></uni-tag>
-          </view>
+          <button 
+            class="edit-stock-btn" 
+            @click="reduceStock(light)"
+            :disabled="light.stock_quantity <= 0"
+          >
+            编辑库存
+          </button>
         </view>
       </view>
     </view>
@@ -697,9 +687,6 @@ export default {
 }
 
 .filter-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
   margin-bottom: 20rpx;
 }
 
@@ -709,24 +696,22 @@ export default {
   color: #ffffff;
 }
 
-.filter-toggle {
-  cursor: pointer;
-  padding: 10rpx;
-  border-radius: 8rpx;
-  background-color: rgba(255, 255, 255, 0.2);
-}
-
 .filter-row {
   display: flex;
-  gap: 20rpx;
   margin-bottom: 20rpx;
+}
+
+.filter-item {
+  flex: 1;
+  display: flex;
   align-items: center;
+  gap: 10rpx;
 }
 
 .filter-label {
   font-size: 28rpx;
   color: #ffffff;
-  min-width: 80rpx;
+  min-width: 100rpx;
 }
 
 .filter-select {
@@ -745,6 +730,17 @@ export default {
   font-size: 28rpx;
 }
 
+.more-filter-btn {
+  flex: 1;
+  background-color: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  border: 2rpx solid rgba(255, 255, 255, 0.3);
+  border-radius: 10rpx;
+  padding: 15rpx;
+  font-size: 28rpx;
+  text-align: center;
+}
+
 .advanced-filter {
   margin: 20rpx 0;
   padding: 20rpx;
@@ -755,29 +751,32 @@ export default {
 .filter-actions {
   display: flex;
   gap: 20rpx;
-  justify-content: center;
   margin-top: 20rpx;
 }
 
 .reset-btn {
+  flex: 1;
   background-color: rgba(255, 255, 255, 0.2);
   color: #ffffff;
   border: 2rpx solid rgba(255, 255, 255, 0.3);
   border-radius: 15rpx;
-  padding: 15rpx 40rpx;
+  padding: 15rpx;
   font-size: 28rpx;
   font-weight: 500;
+  text-align: center;
   transition: all 0.3s ease;
 }
 
 .search-btn {
+  flex: 1;
   background-color: #ffffff;
   color: #667eea;
   border: none;
   border-radius: 15rpx;
-  padding: 15rpx 40rpx;
+  padding: 15rpx;
   font-size: 28rpx;
   font-weight: 500;
+  text-align: center;
   transition: all 0.3s ease;
   box-shadow: 0 4rpx 15rpx rgba(0, 0, 0, 0.1);
 }
@@ -821,20 +820,28 @@ export default {
 }
 
 .light-header {
-  margin-bottom: 20rpx;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10rpx;
 }
 
 .light-name {
-  display: block;
   font-size: 32rpx;
   font-weight: bold;
   color: #333333;
-  margin-bottom: 10rpx;
+  flex: 1;
 }
 
 .light-model {
   font-size: 26rpx;
   color: #666666;
+  margin-bottom: 20rpx;
+}
+
+.stock-tag {
+  font-size: 24rpx;
+  padding: 4rpx 12rpx;
 }
 
 /* 灯带内容 */
@@ -845,8 +852,8 @@ export default {
 }
 
 .light-image {
-  width: 150rpx;
-  height: 150rpx;
+  width: 120rpx;
+  height: 120rpx;
   border-radius: 10rpx;
   overflow: hidden;
   background-color: #f5f5f5;
@@ -911,41 +918,30 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding-top: 15rpx;
+  border-top: 1rpx solid #f0f0f0;
 }
 
 .stock-info {
   display: flex;
   gap: 30rpx;
+  flex: 1;
 }
 
-.stock-item {
-  display: flex;
-  align-items: center;
+.stock-text {
   font-size: 28rpx;
-}
-
-.stock-label {
-  color: #666666;
-  margin-right: 10rpx;
-}
-
-.stock-value {
   font-weight: bold;
   color: #07c160;
 }
 
-.stock-value.price {
+.price-text {
+  font-size: 28rpx;
+  font-weight: bold;
   color: #ff3b30;
 }
 
-.light-actions {
-  display: flex;
-  gap: 15rpx;
-  align-items: center;
-}
-
-.reduce-stock-btn {
-  background-color: #007aff;
+.edit-stock-btn {
+  background-color: #667eea;
   color: white;
   border: none;
   border-radius: 10rpx;
@@ -955,7 +951,7 @@ export default {
   transition: all 0.3s ease;
 }
 
-.reduce-stock-btn:disabled {
+.edit-stock-btn:disabled {
   background-color: #cccccc;
   color: #ffffff;
 }
