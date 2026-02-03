@@ -4,8 +4,9 @@ import { getToken } from '@/utils/auth'
 import errorCode from '@/utils/errorCode'
 import { toast, showConfirm, tansParams } from '@/utils/common'
 
-let timeout = 10000
+let timeout = 30000
 const baseUrl = config.baseUrl
+console.log('请求基础URL:', baseUrl);
 
 const request = config => {
   // 是否需要设置 token

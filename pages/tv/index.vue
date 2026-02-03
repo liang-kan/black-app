@@ -113,7 +113,7 @@
         
         <view class="tv-content">
           <view class="tv-image">
-            <image :src="tv.image" mode="aspectFill" :draggable="false"></image>
+            <image :src="'https://via.placeholder.com/120'" mode="aspectFill" :draggable="false"></image>
           </view>
           
           <view class="tv-info">
@@ -123,15 +123,15 @@
             </view>
             <view class="info-row">
               <text class="info-label">面板类型: </text>
-              <text class="info-value">{{ tv.panel_type }}</text>
+              <text class="info-value">{{ tv.panelType }}</text>
             </view>
             <view class="info-row">
               <text class="info-label">屏幕尺寸: </text>
-              <text class="info-value">{{ tv.screen_size }} 英寸</text>
+              <text class="info-value">{{ tv.screenSize }} 英寸</text>
             </view>
             <view class="info-row">
               <text class="info-label">接口信息: </text>
-              <text class="info-value">{{ tv.port_info }}</text>
+              <text class="info-value">{{ tv.portInfo }}</text>
             </view>
           </view>
         </view>
@@ -139,28 +139,28 @@
         <view class="tv-specs">
           <view class="spec-item">
             <text class="spec-label">能效等级</text>
-            <text class="spec-value">{{ tv.energy_rating }}</text>
+            <text class="spec-value">{{ tv.energyRating }}</text>
           </view>
           <view class="spec-item">
             <text class="spec-label">仓库位置</text>
-            <text class="spec-value">{{ tv.warehouse_location }}</text>
+            <text class="spec-value">{{ tv.warehouseLocation }}</text>
           </view>
           <view class="spec-item">
             <text class="spec-label">状态</text>
-            <uni-tag :type="tv.status === 1 ? 'success' : 'error'" :text="tv.status === 1 ? '正常' : '下架'"></uni-tag>
+            <uni-tag :type="tv.status === 1 ? 'success' : 'error'" :text="tv.status === 1 ? '正常' : '下架'" class="status-tag"></uni-tag>
           </view>
         </view>
         
         <view class="tv-footer">
           <view class="stock-info">
-            <text class="stock-text">库存: {{ tv.stock_quantity }} 件</text>
-            <text class="price-text">价格: ¥ {{ tv.unit_price.toFixed(2) }}</text>
+            <text class="stock-text">库存: {{ tv.stockQuantity }} 件</text>
+            <text class="price-text">价格: ¥ {{ tv.unitPrice.toFixed(2) }}</text>
           </view>
           
           <button 
             class="edit-stock-btn" 
             @click="reduceStock(tv)"
-            :disabled="tv.stock_quantity <= 0"
+            :disabled="tv.stockQuantity <= 0"
           >
             编辑库存
           </button>
@@ -188,6 +188,8 @@
 </template>
 
 <script>
+import { getTvsList, addTvs, updateTvs } from '@/api/system/tvs';
+
 export default {
   data() {
     return {
@@ -196,8 +198,8 @@ export default {
         brand: '',
         model: '',
         resolution: '',
-        panel_type: '',
-        energy_rating: '',
+        panelType: '',
+        energyRating: '',
         status: ''
       },
       // 高级筛选展开状态
@@ -239,200 +241,9 @@ export default {
       currentPage: 1,
       pageSize: 10,
       // 电视数据
-      tvs: [
-        {
-          id: 1,
-          name: '三星智能电视',
-          brand: 'Samsung',
-          model: 'UA55QN90A',
-          screen_size: 55.0,
-          resolution: '4K',
-          panel_type: 'QLED',
-          port_info: 'HDMIx4, USBx2',
-          energy_rating: 'A+++',
-          stock_quantity: 50,
-          unit_price: 5999.00,
-          warehouse_location: 'A-12-3',
-          status: 1,
-          image: 'https://cdn.pixabay.com/photo/2017/01/24/03/53/tv-1995437_1280.png'
-        },
-        {
-          id: 2,
-          name: 'LG OLED电视',
-          brand: 'LG',
-          model: 'OLED55C1',
-          screen_size: 55.0,
-          resolution: '4K',
-          panel_type: 'OLED',
-          port_info: 'HDMIx4, USBx3',
-          energy_rating: 'A++',
-          stock_quantity: 30,
-          unit_price: 6999.00,
-          warehouse_location: 'A-12-4',
-          status: 1,
-          image: 'https://cdn.pixabay.com/photo/2016/11/18/16/16/tv-1835431_1280.jpg'
-        },
-        {
-          id: 3,
-          name: '索尼4K电视',
-          brand: 'Sony',
-          model: 'KD-65X90J',
-          screen_size: 65.0,
-          resolution: '4K',
-          panel_type: 'LCD',
-          port_info: 'HDMIx4, USBx2',
-          energy_rating: 'A++',
-          stock_quantity: 25,
-          unit_price: 7999.00,
-          warehouse_location: 'A-13-1',
-          status: 1,
-          image: 'https://cdn.pixabay.com/photo/2016/09/08/20/01/television-1654367_1280.jpg'
-        },
-        {
-          id: 4,
-          name: 'TCL量子点电视',
-          brand: 'TCL',
-          model: '75Q10E',
-          screen_size: 75.0,
-          resolution: '4K',
-          panel_type: 'QLED',
-          port_info: 'HDMIx4, USBx3',
-          energy_rating: 'A+',
-          stock_quantity: 40,
-          unit_price: 4999.00,
-          warehouse_location: 'A-13-2',
-          status: 1,
-          image: 'https://cdn.pixabay.com/photo/2020/10/09/19/10/smart-tv-5640322_1280.jpg'
-        },
-        {
-          id: 5,
-          name: '海信ULED电视',
-          brand: 'Hisense',
-          model: '65U7G-PRO',
-          screen_size: 65.0,
-          resolution: '4K',
-          panel_type: 'LCD',
-          port_info: 'HDMIx4, USBx2',
-          energy_rating: 'A++',
-          stock_quantity: 35,
-          unit_price: 5499.00,
-          warehouse_location: 'A-14-1',
-          status: 1,
-          image: 'https://cdn.pixabay.com/photo/2016/01/09/18/27/old-1130743_1280.jpg'
-        },
-        {
-          id: 6,
-          name: '创维8K电视',
-          brand: 'Skyworth',
-          model: '86Q71',
-          screen_size: 86.0,
-          resolution: '8K',
-          panel_type: 'QLED',
-          port_info: 'HDMIx4, USBx3',
-          energy_rating: 'A+',
-          stock_quantity: 10,
-          unit_price: 19999.00,
-          warehouse_location: 'B-01-1',
-          status: 1,
-          image: 'https://cdn.pixabay.com/photo/2019/03/27/07/43/entertainment-4083169_1280.jpg'
-        },
-        {
-          id: 7,
-          name: '三星Mini-LED电视',
-          brand: 'Samsung',
-          model: 'QA75QN90C',
-          screen_size: 75.0,
-          resolution: '4K',
-          panel_type: 'Mini-LED',
-          port_info: 'HDMIx4, USBx2',
-          energy_rating: 'A+++',
-          stock_quantity: 15,
-          unit_price: 12999.00,
-          warehouse_location: 'B-01-2',
-          status: 1,
-          image: 'https://cdn.pixabay.com/photo/2016/11/18/16/16/tv-1835431_1280.jpg'
-        },
-        {
-          id: 8,
-          name: 'LG 42英寸OLED电视',
-          brand: 'LG',
-          model: 'OLED42C2',
-          screen_size: 42.0,
-          resolution: '4K',
-          panel_type: 'OLED',
-          port_info: 'HDMIx4, USBx2',
-          energy_rating: 'A++',
-          stock_quantity: 20,
-          unit_price: 4499.00,
-          warehouse_location: 'B-02-1',
-          status: 1,
-          image: 'https://cdn.pixabay.com/photo/2019/03/27/07/43/entertainment-4083169_1280.jpg'
-        },
-        {
-          id: 9,
-          name: '索尼32英寸电视',
-          brand: 'Sony',
-          model: 'KD-32W800',
-          screen_size: 32.0,
-          resolution: '1080P',
-          panel_type: 'LCD',
-          port_info: 'HDMIx2, USBx1',
-          energy_rating: 'A+',
-          stock_quantity: 60,
-          unit_price: 1999.00,
-          warehouse_location: 'C-01-1',
-          status: 1,
-          image: 'https://cdn.pixabay.com/photo/2016/09/08/20/01/television-1654367_1280.jpg'
-        },
-        {
-          id: 10,
-          name: 'TCL 50英寸智能电视',
-          brand: 'TCL',
-          model: '50V8',
-          screen_size: 50.0,
-          resolution: '4K',
-          panel_type: 'LCD',
-          port_info: 'HDMIx3, USBx2',
-          energy_rating: 'A+',
-          stock_quantity: 45,
-          unit_price: 2999.00,
-          warehouse_location: 'C-01-2',
-          status: 1,
-          image: 'https://cdn.pixabay.com/photo/2020/10/09/19/10/smart-tv-5640322_1280.jpg'
-        },
-        {
-          id: 11,
-          name: '海信75英寸电视',
-          brand: 'Hisense',
-          model: '75E7G-PRO',
-          screen_size: 75.0,
-          resolution: '4K',
-          panel_type: 'QLED',
-          port_info: 'HDMIx4, USBx3',
-          energy_rating: 'A++',
-          stock_quantity: 20,
-          unit_price: 8999.00,
-          warehouse_location: 'B-02-2',
-          status: 1,
-          image: 'https://cdn.pixabay.com/photo/2016/01/09/18/27/old-1130743_1280.jpg'
-        },
-        {
-          id: 12,
-          name: '创维65英寸OLED电视',
-          brand: 'Skyworth',
-          model: 'OLED65S81',
-          screen_size: 65.0,
-          resolution: '4K',
-          panel_type: 'OLED',
-          port_info: 'HDMIx4, USBx3',
-          energy_rating: 'A+++',
-          stock_quantity: 8,
-          unit_price: 14999.00,
-          warehouse_location: 'B-03-1',
-          status: 1,
-          image: 'https://cdn.pixabay.com/photo/2019/03/27/07/43/entertainment-4083169_1280.jpg'
-        }
-      ]
+      tvs: [],
+      // 加载状态
+      loading: false
     };
   },
   computed: {
@@ -457,13 +268,13 @@ export default {
       }
       
       // 面板类型筛选
-      if (this.filters.panel_type) {
-        result = result.filter(tv => tv.panel_type === this.filters.panel_type);
+      if (this.filters.panelType) {
+        result = result.filter(tv => tv.panelType === this.filters.panelType);
       }
       
       // 能效等级筛选
-      if (this.filters.energy_rating) {
-        result = result.filter(tv => tv.energy_rating === this.filters.energy_rating);
+      if (this.filters.energyRating) {
+        result = result.filter(tv => tv.energyRating === this.filters.energyRating);
       }
       
       // 状态筛选
@@ -483,7 +294,7 @@ export default {
     // 搜索电视
     searchTvs() {
       console.log('搜索电视:', this.filters);
-      // 这里可以添加搜索逻辑，目前直接使用计算属性过滤
+      this.loadTvs();
     },
     
     // 重置筛选条件
@@ -492,11 +303,12 @@ export default {
         brand: '',
         model: '',
         resolution: '',
-        panel_type: '',
-        energy_rating: '',
+        panelType: '',
+        energyRating: '',
         status: ''
       };
       this.currentPage = 1;
+      this.loadTvs();
     },
     
     // 切换高级筛选展开状态
@@ -506,16 +318,52 @@ export default {
     
     // 减少库存
     reduceStock(tv) {
-      if (tv.stock_quantity > 0) {
-        tv.stock_quantity--;
-        this.$modal.showToast('库存已减少');
+      if (tv.stockQuantity > 0) {
+        const updatedTv = { ...tv, stockQuantity: tv.stockQuantity - 1 };
+        updateTvs(updatedTv).then(res => {
+          if (res.code === 200) {
+            this.$modal.showToast('库存已减少');
+            this.loadTvs();
+          } else {
+            this.$modal.showToast('更新库存失败');
+          }
+        });
       }
     },
     
     // 页码变化
     onPageChange(e) {
       this.currentPage = e.current;
+    },
+    
+    // 加载电视数据
+    loadTvs() {
+      this.loading = true;
+      getTvsList(this.filters).then(res => {
+        console.log('后端返回数据:', res);
+        if (res && (res.code === 200 || res.code === '200')) {
+          if (res.data && res.data.rows) {
+            this.tvs = res.data.rows;
+          } else if (res.rows) {
+            this.tvs = res.rows;
+          } else if (res.data) {
+            this.tvs = res.data;
+          } else {
+            this.tvs = [];
+          }
+        } else {
+          this.$modal.showToast('获取数据失败');
+        }
+      }).catch(error => {
+        console.error('请求错误:', error);
+        this.$modal.showToast('请求失败');
+      }).finally(() => {
+        this.loading = false;
+      });
     }
+  },
+  mounted() {
+    this.loadTvs();
   }
 };
 </script>
@@ -789,6 +637,10 @@ export default {
   font-size: 28rpx;
   font-weight: bold;
   color: #333333;
+}
+
+.status-tag {
+  font-size: 24rpx;
 }
 
 /* 电视底部 */

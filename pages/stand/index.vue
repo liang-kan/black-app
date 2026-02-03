@@ -113,25 +113,25 @@
         
         <view class="mount-content">
           <view class="mount-image">
-            <image :src="mount.image" mode="aspectFill" :draggable="false"></image>
+            <image :src="'https://via.placeholder.com/120'" mode="aspectFill" :draggable="false"></image>
           </view>
           
           <view class="mount-info">
             <view class="info-row">
               <text class="info-label">类型: </text>
-              <text class="info-value">{{ mount.mount_type }}</text>
+              <text class="info-value">{{ mount.mountType }}</text>
             </view>
             <view class="info-row">
               <text class="info-label">最大承重: </text>
-              <text class="info-value">{{ mount.max_load_kg }} kg</text>
+              <text class="info-value">{{ mount.maxLoadKg }} kg</text>
             </view>
             <view class="info-row">
               <text class="info-label">适用尺寸: </text>
-              <text class="info-value">{{ mount.fits_size_range }}</text>
+              <text class="info-value">{{ mount.fitsSizeRange }}</text>
             </view>
             <view class="info-row">
               <text class="info-label">VESA孔距: </text>
-              <text class="info-value">{{ mount.vesa_standard }}</text>
+              <text class="info-value">{{ mount.vesaStandard }}</text>
             </view>
           </view>
         </view>
@@ -139,28 +139,28 @@
         <view class="mount-specs">
           <view class="spec-item">
             <text class="spec-label">钢材厚度</text>
-            <text class="spec-value">{{ mount.steel_thickness }} mm</text>
+            <text class="spec-value">{{ mount.steelThickness }} mm</text>
           </view>
           <view class="spec-item">
             <text class="spec-label">仓库位置</text>
-            <text class="spec-value">{{ mount.warehouse_location }}</text>
+            <text class="spec-value">{{ mount.warehouseLocation }}</text>
           </view>
           <view class="spec-item">
             <text class="spec-label">状态</text>
-            <uni-tag :type="mount.status === 1 ? 'success' : 'error'" :text="mount.status === 1 ? '正常' : '下架'"></uni-tag>
+            <uni-tag :type="mount.status === 1 ? 'success' : 'error'" :text="mount.status === 1 ? '正常' : '下架'" class="status-tag"></uni-tag>
           </view>
         </view>
         
         <view class="mount-footer">
           <view class="stock-info">
-            <text class="stock-text">库存: {{ mount.stock_quantity }} 件</text>
-            <text class="price-text">价格: ¥ {{ mount.unit_price }}</text>
+            <text class="stock-text">库存: {{ mount.stockQuantity }} 件</text>
+            <text class="price-text">价格: ¥ {{ mount.unitPrice }}</text>
           </view>
           
           <button 
             class="edit-stock-btn" 
             @click="reduceStock(mount)"
-            :disabled="mount.stock_quantity <= 0"
+            :disabled="mount.stockQuantity <= 0"
           >
             编辑库存
           </button>
@@ -188,6 +188,8 @@
 </template>
 
 <script>
+import { getMountsList, addMounts, updateMounts } from '@/api/system/mounts';
+
 export default {
   data() {
     return {
@@ -195,9 +197,9 @@ export default {
       filters: {
         brand: '',
         model: '',
-        mount_type: '',
-        fits_size_range: '',
-        vesa_standard: '',
+        mountType: '',
+        fitsSizeRange: '',
+        vesaStandard: '',
         status: ''
       },
       // 高级筛选展开状态
@@ -239,236 +241,9 @@ export default {
       currentPage: 1,
       pageSize: 10,
       // 挂架数据
-      mounts: [
-        {
-          id: 1,
-          name: '乐歌 L1F 电视挂架',
-          brand: '乐歌',
-          model: 'L1F',
-          mount_type: '固定式',
-          max_load_kg: 30.00,
-          fits_size_range: '32-55英寸',
-          vesa_standard: '200x200',
-          steel_thickness: 1.50,
-          stock_quantity: 45,
-          unit_price: 99.00,
-          warehouse_location: 'A区-01-05',
-          status: 1,
-          image: 'https://cdn.pixabay.com/photo/2017/10/27/10/08/tv-2893622_1280.jpg',
-          create_time: '2024-01-01 10:00:00',
-          update_time: '2024-01-15 14:30:00',
-          remark: '适合大多数32-55英寸电视'
-        },
-        {
-          id: 2,
-          name: 'NB SP2 旋转伸缩电视挂架',
-          brand: 'NB',
-          model: 'SP2',
-          mount_type: '旋转伸缩式',
-          max_load_kg: 40.00,
-          fits_size_range: '32-65英寸',
-          vesa_standard: '400x400',
-          steel_thickness: 2.00,
-          stock_quantity: 28,
-          unit_price: 199.00,
-          warehouse_location: 'A区-02-03',
-          status: 1,
-          image: 'https://cdn.pixabay.com/photo/2016/11/19/14/00/architecture-1839181_1280.jpg',
-          create_time: '2024-01-02 11:00:00',
-          update_time: '2024-01-16 09:15:00',
-          remark: '支持左右旋转和前后伸缩'
-        },
-        {
-          id: 3,
-          name: 'TOPSKYS 落地移动电视支架',
-          brand: 'TOPSKYS',
-          model: 'P600',
-          mount_type: '落地移动式',
-          max_load_kg: 50.00,
-          fits_size_range: '40-75英寸',
-          vesa_standard: '600x400',
-          steel_thickness: 2.50,
-          stock_quantity: 15,
-          unit_price: 399.00,
-          warehouse_location: 'B区-01-01',
-          status: 1,
-          image: 'https://cdn.pixabay.com/photo/2020/10/09/19/10/smart-tv-5640322_1280.jpg',
-          create_time: '2024-01-03 14:20:00',
-          update_time: '2024-01-17 16:45:00',
-          remark: '带轮子，可自由移动'
-        },
-        {
-          id: 4,
-          name: '爱路华 超薄电视挂架',
-          brand: '爱路华',
-          model: 'SLIM-01',
-          mount_type: '固定式',
-          max_load_kg: 25.00,
-          fits_size_range: '26-42英寸',
-          vesa_standard: '100x100',
-          steel_thickness: 1.20,
-          stock_quantity: 60,
-          unit_price: 79.00,
-          warehouse_location: 'A区-03-06',
-          status: 1,
-          image: 'https://cdn.pixabay.com/photo/2017/02/18/01/20/home-2076160_1280.jpg',
-          create_time: '2024-01-04 09:30:00',
-          update_time: '2024-01-18 11:20:00',
-          remark: '厚度仅1.5cm，贴墙安装'
-        },
-        {
-          id: 5,
-          name: 'Redlemon 吊顶电视支架',
-          brand: 'Redlemon',
-          model: 'CEIL-02',
-          mount_type: '吊顶式',
-          max_load_kg: 35.00,
-          fits_size_range: '32-55英寸',
-          vesa_standard: '200x200',
-          steel_thickness: 1.80,
-          stock_quantity: 8,
-          unit_price: 299.00,
-          warehouse_location: 'B区-02-04',
-          status: 1,
-          image: 'https://cdn.pixabay.com/photo/2016/11/19/14/00/architecture-1839181_1280.jpg',
-          create_time: '2024-01-05 16:15:00',
-          update_time: '2024-01-19 13:50:00',
-          remark: '适合商场、展厅等场所'
-        },
-        {
-          id: 6,
-          name: '乐歌 L2F 电视挂架',
-          brand: '乐歌',
-          model: 'L2F',
-          mount_type: '固定式',
-          max_load_kg: 45.00,
-          fits_size_range: '40-65英寸',
-          vesa_standard: '400x400',
-          steel_thickness: 2.00,
-          stock_quantity: 32,
-          unit_price: 129.00,
-          warehouse_location: 'A区-01-02',
-          status: 1,
-          image: 'https://cdn.pixabay.com/photo/2017/10/27/10/08/tv-2893622_1280.jpg',
-          create_time: '2024-01-06 10:45:00',
-          update_time: '2024-01-20 08:30:00',
-          remark: '加强版，承重更大'
-        },
-        {
-          id: 7,
-          name: 'NB P5 旋转伸缩电视挂架',
-          brand: 'NB',
-          model: 'P5',
-          mount_type: '旋转伸缩式',
-          max_load_kg: 50.00,
-          fits_size_range: '42-75英寸',
-          vesa_standard: '600x400',
-          steel_thickness: 2.50,
-          stock_quantity: 12,
-          unit_price: 299.00,
-          warehouse_location: 'A区-02-01',
-          status: 1,
-          image: 'https://cdn.pixabay.com/photo/2016/11/19/14/00/architecture-1839181_1280.jpg',
-          create_time: '2024-01-07 13:20:00',
-          update_time: '2024-01-21 15:15:00',
-          remark: '重型电视专用'
-        },
-        {
-          id: 8,
-          name: 'TOPSKYS 桌面显示器支架',
-          brand: 'TOPSKYS',
-          model: 'DM100',
-          mount_type: '桌面式',
-          max_load_kg: 10.00,
-          fits_size_range: '19-32英寸',
-          vesa_standard: '100x100',
-          steel_thickness: 1.50,
-          stock_quantity: 45,
-          unit_price: 159.00,
-          warehouse_location: 'C区-01-03',
-          status: 1,
-          image: 'https://cdn.pixabay.com/photo/2015/01/22/17/45/desk-608466_1280.jpg',
-          create_time: '2024-01-08 15:50:00',
-          update_time: '2024-01-22 10:40:00',
-          remark: '适合显示器使用'
-        },
-        {
-          id: 9,
-          name: '爱路华 曲面电视挂架',
-          brand: '爱路华',
-          model: 'CURVE-01',
-          mount_type: '固定式',
-          max_load_kg: 35.00,
-          fits_size_range: '40-65英寸',
-          vesa_standard: '400x400',
-          steel_thickness: 1.80,
-          stock_quantity: 20,
-          unit_price: 149.00,
-          warehouse_location: 'A区-03-02',
-          status: 1,
-          image: 'https://cdn.pixabay.com/photo/2017/02/18/01/20/home-2076160_1280.jpg',
-          create_time: '2024-01-09 09:10:00',
-          update_time: '2024-01-23 14:25:00',
-          remark: '专为曲面电视设计'
-        },
-        {
-          id: 10,
-          name: 'Redlemon 双屏显示器支架',
-          brand: 'Redlemon',
-          model: 'DS200',
-          mount_type: '桌面式',
-          max_load_kg: 15.00,
-          fits_size_range: '19-27英寸',
-          vesa_standard: '100x100',
-          steel_thickness: 2.00,
-          stock_quantity: 18,
-          unit_price: 249.00,
-          warehouse_location: 'C区-01-01',
-          status: 1,
-          image: 'https://cdn.pixabay.com/photo/2015/01/22/17/45/desk-608466_1280.jpg',
-          create_time: '2024-01-10 11:30:00',
-          update_time: '2024-01-24 12:10:00',
-          remark: '支持双屏显示'
-        },
-        {
-          id: 11,
-          name: '乐歌 L3F 电视挂架',
-          brand: '乐歌',
-          model: 'L3F',
-          mount_type: '固定式',
-          max_load_kg: 60.00,
-          fits_size_range: '55-85英寸',
-          vesa_standard: '600x400',
-          steel_thickness: 3.00,
-          stock_quantity: 10,
-          unit_price: 199.00,
-          warehouse_location: 'B区-01-03',
-          status: 1,
-          image: 'https://cdn.pixabay.com/photo/2017/10/27/10/08/tv-2893622_1280.jpg',
-          create_time: '2024-01-11 16:45:00',
-          update_time: '2024-01-25 10:00:00',
-          remark: '超大屏电视专用'
-        },
-        {
-          id: 12,
-          name: 'NB SP3 旋转伸缩电视挂架',
-          brand: 'NB',
-          model: 'SP3',
-          mount_type: '旋转伸缩式',
-          max_load_kg: 45.00,
-          fits_size_range: '37-65英寸',
-          vesa_standard: '400x400',
-          steel_thickness: 2.20,
-          stock_quantity: 25,
-          unit_price: 249.00,
-          warehouse_location: 'A区-02-02',
-          status: 1,
-          image: 'https://cdn.pixabay.com/photo/2016/11/19/14/00/architecture-1839181_1280.jpg',
-          create_time: '2024-01-12 13:20:00',
-          update_time: '2024-01-25 11:30:00',
-          remark: '升级款，稳定性更好'
-        }
-      ]
+      mounts: [],
+      // 加载状态
+      loading: false
     };
   },
   computed: {
@@ -488,18 +263,18 @@ export default {
       }
       
       // 类型筛选
-      if (this.filters.mount_type) {
-        result = result.filter(mount => mount.mount_type === this.filters.mount_type);
+      if (this.filters.mountType) {
+        result = result.filter(mount => mount.mountType === this.filters.mountType);
       }
       
       // 适用尺寸筛选
-      if (this.filters.fits_size_range) {
-        result = result.filter(mount => mount.fits_size_range === this.filters.fits_size_range);
+      if (this.filters.fitsSizeRange) {
+        result = result.filter(mount => mount.fitsSizeRange === this.filters.fitsSizeRange);
       }
       
       // VESA孔距筛选
-      if (this.filters.vesa_standard) {
-        result = result.filter(mount => mount.vesa_standard === this.filters.vesa_standard);
+      if (this.filters.vesaStandard) {
+        result = result.filter(mount => mount.vesaStandard === this.filters.vesaStandard);
       }
       
       // 状态筛选
@@ -519,7 +294,7 @@ export default {
     // 搜索挂架
     searchMounts() {
       console.log('搜索挂架:', this.filters);
-      // 这里可以添加搜索逻辑，目前直接使用计算属性过滤
+      this.loadMounts();
     },
     
     // 重置筛选条件
@@ -527,12 +302,13 @@ export default {
       this.filters = {
         brand: '',
         model: '',
-        mount_type: '',
-        fits_size_range: '',
-        vesa_standard: '',
+        mountType: '',
+        fitsSizeRange: '',
+        vesaStandard: '',
         status: ''
       };
       this.currentPage = 1;
+      this.loadMounts();
     },
     
     // 切换高级筛选展开状态
@@ -542,16 +318,52 @@ export default {
     
     // 减少库存
     reduceStock(mount) {
-      if (mount.stock_quantity > 0) {
-        mount.stock_quantity--;
-        this.$modal.showToast('库存已减少');
+      if (mount.stockQuantity > 0) {
+        const updatedMount = { ...mount, stockQuantity: mount.stockQuantity - 1 };
+        updateMounts(updatedMount).then(res => {
+          if (res.code === 200) {
+            this.$modal.showToast('库存已减少');
+            this.loadMounts();
+          } else {
+            this.$modal.showToast('更新库存失败');
+          }
+        });
       }
     },
     
     // 页码变化
     onPageChange(e) {
       this.currentPage = e.current;
+    },
+    
+    // 加载挂架数据
+    loadMounts() {
+      this.loading = true;
+      getMountsList(this.filters).then(res => {
+        console.log('后端返回数据:', res);
+        if (res && (res.code === 200 || res.code === '200')) {
+          if (res.data && res.data.rows) {
+            this.mounts = res.data.rows;
+          } else if (res.rows) {
+            this.mounts = res.rows;
+          } else if (res.data) {
+            this.mounts = res.data;
+          } else {
+            this.mounts = [];
+          }
+        } else {
+          this.$modal.showToast('获取数据失败');
+        }
+      }).catch(error => {
+        console.error('请求错误:', error);
+        this.$modal.showToast('请求失败');
+      }).finally(() => {
+        this.loading = false;
+      });
     }
+  },
+  mounted() {
+    this.loadMounts();
   }
 };
 </script>
@@ -825,6 +637,10 @@ export default {
   font-size: 28rpx;
   font-weight: bold;
   color: #333333;
+}
+
+.status-tag {
+  font-size: 24rpx;
 }
 
 /* 挂架底部 */

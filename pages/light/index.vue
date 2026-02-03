@@ -29,8 +29,8 @@
         
         <view class="filter-row">
           <uni-easyinput 
-            v-model="filters.model_number" 
-            placeholder="型号: 请输入型号"
+            v-model="filters.name" 
+            placeholder="名称: 请输入名称"
             @input="onFilterChange"
             class="filter-input"
           ></uni-easyinput>
@@ -45,43 +45,11 @@
         <view class="advanced-filter" v-show="showAdvancedFilter">
           <view class="filter-row">
             <view class="filter-item">
-              <text class="filter-label">LED类型：</text>
+              <text class="filter-label">状态：</text>
               <uni-data-select 
-                v-model="filters.led_type" 
-                :localdata="ledTypeOptions" 
-                placeholder="请选择LED类型"
-                @change="onFilterChange"
-                class="filter-select"
-              ></uni-data-select>
-            </view>
-            <view class="filter-item">
-              <text class="filter-label">颜色支持：</text>
-              <uni-data-select 
-                v-model="filters.color_support" 
-                :localdata="colorSupportOptions" 
-                placeholder="请选择颜色类型"
-                @change="onFilterChange"
-                class="filter-select"
-              ></uni-data-select>
-            </view>
-          </view>
-          <view class="filter-row">
-            <view class="filter-item">
-              <text class="filter-label">防水等级：</text>
-              <uni-data-select 
-                v-model="filters.waterproof_rating" 
-                :localdata="waterproofOptions" 
-                placeholder="请选择防水等级"
-                @change="onFilterChange"
-                class="filter-select"
-              ></uni-data-select>
-            </view>
-            <view class="filter-item">
-              <text class="filter-label">控制方式：</text>
-              <uni-data-select 
-                v-model="filters.control_method" 
-                :localdata="controlMethodOptions" 
-                placeholder="请选择控制方式"
+                v-model="filters.status" 
+                :localdata="statusOptions" 
+                placeholder="请选择状态"
                 @change="onFilterChange"
                 class="filter-select"
               ></uni-data-select>
@@ -106,28 +74,28 @@
     <view class="lights-list">
       <view class="light-card" v-for="(light, index) in filteredLights" :key="light.id">
         <view class="light-header">
-          <text class="light-name">{{ light.product_name }}</text>
-          <uni-tag :type="light.stock_quantity > 0 ? 'success' : 'error'" :text="light.stock_quantity > 0 ? '有货' : '缺货'" class="stock-tag"></uni-tag>
+          <text class="light-name">{{ light.name }}</text>
+          <uni-tag :type="light.stockQuantity > 0 ? 'success' : 'error'" :text="light.stockQuantity > 0 ? '有货' : '缺货'" class="stock-tag"></uni-tag>
         </view>
-        <text class="light-model">{{ light.brand }} {{ light.model_number }}</text>
+        <text class="light-model">{{ light.brand }}</text>
         
         <view class="light-content">
           <view class="light-image">
-            <image :src="light.image" mode="aspectFill" :draggable="false"></image>
+            <image :src="'https://via.placeholder.com/120'" mode="aspectFill" :draggable="false"></image>
           </view>
           
           <view class="light-info">
             <view class="info-row">
-              <text class="info-label">LED类型: </text>
-              <text class="info-value">{{ light.led_type }}</text>
+              <text class="info-label">电压: </text>
+              <text class="info-value">{{ light.voltage || '无' }}</text>
             </view>
             <view class="info-row">
-              <text class="info-label">颜色支持: </text>
-              <text class="info-value">{{ light.color_support }}</text>
+              <text class="info-label">色温/颜色: </text>
+              <text class="info-value">{{ light.colorTemp || '无' }}</text>
             </view>
             <view class="info-row">
-              <text class="info-label">控制方式: </text>
-              <text class="info-value">{{ light.control_method }}</text>
+              <text class="info-label">是否侧光式: </text>
+              <text class="info-value">{{ (light.isSideLight === 1) ? '是' : '否' }}</text>
             </view>
           </view>
         </view>
@@ -135,28 +103,28 @@
         <view class="light-specs">
           <view class="spec-item">
             <text class="spec-label">长度:</text>
-            <text class="spec-value">{{ light.length_mm }} mm</text>
+            <text class="spec-value">{{ light.lengthMeters || '0' }} m</text>
           </view>
           <view class="spec-item">
-            <text class="spec-label">输入电压</text>
-            <text class="spec-value">{{ light.input_voltage_v }} V</text>
+            <text class="spec-label">电压</text>
+            <text class="spec-value">{{ light.voltage || '无' }}</text>
           </view>
           <view class="spec-item">
-            <text class="spec-label">可裁剪:</text>
-            <text class="spec-value">{{ light.cuttable ? '是' : '否' }}</text>
+            <text class="spec-label">状态:</text>
+            <text class="spec-value">{{ (light.status === 1) ? '正常' : '下架' }}</text>
           </view>
         </view>
         
         <view class="light-footer">
           <view class="stock-info">
-            <text class="stock-text">库存: {{ light.stock_quantity }} 件</text>
-            <text class="price-text">价格: {{ light.currency }} {{ light.price }}</text>
+            <text class="stock-text">库存: {{ light.stockQuantity || 0 }} 件</text>
+            <text class="price-text">单价: {{ light.unitPrice || 0 }} 元</text>
           </view>
           
           <button 
             class="edit-stock-btn" 
             @click="reduceStock(light)"
-            :disabled="light.stock_quantity <= 0"
+            :disabled="(light.stockQuantity || 0) <= 0"
           >
             编辑库存
           </button>
@@ -184,17 +152,16 @@
 </template>
 
 <script>
+import { getLedStripsList, addLedStrips, updateLedStrips } from '@/api/system/ledStrips';
+
 export default {
   data() {
     return {
       // 筛选条件
       filters: {
         brand: '',
-        model_number: '',
-        led_type: '',
-        color_support: '',
-        waterproof_rating: '',
-        control_method: ''
+        name: '',
+        status: ''
       },
       // 高级筛选展开状态
       showAdvancedFilter: false,
@@ -235,326 +202,17 @@ export default {
         { text: 'App', value: 'App' },
         { text: '遥控器', value: '遥控器' }
       ],
+      statusOptions: [
+        { text: '正常', value: '1' },
+        { text: '下架', value: '0' }
+      ],
       // 分页参数
       currentPage: 1,
       pageSize: 10,
       // 灯带数据
-      lights: [
-        {
-          id: 1,
-          product_name: 'Philips Hue Play HDMI Sync Box 灯带',
-          brand: 'Philips',
-          model_number: 'HUE-PLAY-01',
-          length_mm: 2000,
-          led_count: 60,
-          led_type: 'SMD5050',
-          color_support: 'RGB',
-          max_brightness: 800,
-          power_consumption_w: 18.00,
-          input_voltage_v: 12.0,
-          waterproof_rating: 'IP20',
-          cuttable: false,
-          cut_interval_mm: 0,
-          control_method: 'Wi-Fi, HDMI同步, App',
-          compatible_ecosystems: 'HomeKit, Alexa, Google Assistant',
-          sync_capability: true,
-          adhesive_backing: true,
-          remote_included: true,
-          price: 1299.00,
-          currency: 'CNY',
-          stock_quantity: 25,
-          image: 'https://cdn.pixabay.com/photo/2015/02/07/20/14/laptop-627118_1280.jpg',
-          created_at: '2024-01-01 10:00:00',
-          updated_at: '2024-01-15 14:30:00'
-        },
-        {
-          id: 2,
-          product_name: 'Govee RGBIC LED 灯带',
-          brand: 'Govee',
-          model_number: 'H6167',
-          length_mm: 3000,
-          led_count: 90,
-          led_type: 'WS2812B',
-          color_support: 'RGBIC',
-          max_brightness: 1000,
-          power_consumption_w: 24.00,
-          input_voltage_v: 12.0,
-          waterproof_rating: 'IP65',
-          cuttable: true,
-          cut_interval_mm: 100,
-          control_method: '蓝牙, Wi-Fi, App, 遥控器',
-          compatible_ecosystems: 'Alexa, Google Assistant',
-          sync_capability: true,
-          adhesive_backing: true,
-          remote_included: true,
-          price: 299.00,
-          currency: 'CNY',
-          stock_quantity: 50,
-          image: 'https://cdn.pixabay.com/photo/2021/01/06/19/56/light-5893816_1280.jpg',
-          created_at: '2024-01-02 11:00:00',
-          updated_at: '2024-01-16 09:15:00'
-        },
-        {
-          id: 3,
-          product_name: 'Nanoleaf Lines 智能灯带',
-          brand: 'Nanoleaf',
-          model_number: 'NL42-0001TW-9PK',
-          length_mm: 1500,
-          led_count: 45,
-          led_type: 'SK6812',
-          color_support: 'RGBW',
-          max_brightness: 1200,
-          power_consumption_w: 15.00,
-          input_voltage_v: 24.0,
-          waterproof_rating: 'IP20',
-          cuttable: false,
-          cut_interval_mm: 0,
-          control_method: 'Wi-Fi, App',
-          compatible_ecosystems: 'HomeKit, Alexa, Google Assistant, Samsung SmartThings',
-          sync_capability: true,
-          adhesive_backing: true,
-          remote_included: false,
-          price: 1999.00,
-          currency: 'CNY',
-          stock_quantity: 10,
-          created_at: '2024-01-03 14:20:00',
-          updated_at: '2024-01-17 16:45:00'
-        },
-        {
-          id: 4,
-          product_name: 'LIFX Z LED 灯带',
-          brand: 'LIFX',
-          model_number: 'LIFXZ',
-          length_mm: 2400,
-          led_count: 72,
-          led_type: 'SMD5050',
-          color_support: 'RGBWW',
-          max_brightness: 1500,
-          power_consumption_w: 30.00,
-          input_voltage_v: 24.0,
-          waterproof_rating: 'IP65',
-          cuttable: true,
-          cut_interval_mm: 100,
-          control_method: 'Wi-Fi, App',
-          compatible_ecosystems: 'HomeKit, Alexa, Google Assistant, Microsoft Cortana',
-          sync_capability: true,
-          adhesive_backing: true,
-          remote_included: false,
-          price: 899.00,
-          currency: 'CNY',
-          stock_quantity: 15,
-          created_at: '2024-01-04 09:30:00',
-          updated_at: '2024-01-18 11:20:00'
-        },
-        {
-          id: 5,
-          product_name: 'Yeelight 智能彩光灯带',
-          brand: 'Yeelight',
-          model_number: 'YLDD003',
-          length_mm: 1000,
-          led_count: 30,
-          led_type: 'SMD5050',
-          color_support: 'RGB',
-          max_brightness: 500,
-          power_consumption_w: 10.00,
-          input_voltage_v: 12.0,
-          waterproof_rating: 'IP20',
-          cuttable: true,
-          cut_interval_mm: 50,
-          control_method: '蓝牙, Wi-Fi, App',
-          compatible_ecosystems: 'HomeKit, Alexa, Google Assistant, Xiaomi Home',
-          sync_capability: false,
-          adhesive_backing: true,
-          remote_included: false,
-          price: 129.00,
-          currency: 'CNY',
-          stock_quantity: 100,
-          created_at: '2024-01-05 16:15:00',
-          updated_at: '2024-01-19 13:50:00'
-        },
-        {
-          id: 6,
-          product_name: 'TP-Link Kasa Smart LED 灯带',
-          brand: 'TP-Link',
-          model_number: 'KL430',
-          length_mm: 2000,
-          led_count: 60,
-          led_type: 'SMD5050',
-          color_support: 'RGB',
-          max_brightness: 700,
-          power_consumption_w: 16.00,
-          input_voltage_v: 12.0,
-          waterproof_rating: 'IP65',
-          cuttable: true,
-          cut_interval_mm: 100,
-          control_method: 'Wi-Fi, App',
-          compatible_ecosystems: 'Alexa, Google Assistant',
-          sync_capability: false,
-          adhesive_backing: true,
-          remote_included: false,
-          price: 399.00,
-          currency: 'CNY',
-          stock_quantity: 30,
-          created_at: '2024-01-06 10:45:00',
-          updated_at: '2024-01-20 08:30:00'
-        },
-        {
-          id: 7,
-          product_name: 'Philips Hue LightStrip Plus',
-          brand: 'Philips',
-          model_number: '3216130P7',
-          length_mm: 2000,
-          led_count: 60,
-          led_type: 'SMD5050',
-          color_support: 'RGB',
-          max_brightness: 1600,
-          power_consumption_w: 20.00,
-          input_voltage_v: 24.0,
-          waterproof_rating: 'IP20',
-          cuttable: true,
-          cut_interval_mm: 100,
-          control_method: 'Zigbee, App',
-          compatible_ecosystems: 'HomeKit, Alexa, Google Assistant, Samsung SmartThings',
-          sync_capability: true,
-          adhesive_backing: true,
-          remote_included: false,
-          price: 899.00,
-          currency: 'CNY',
-          stock_quantity: 20,
-          created_at: '2024-01-07 13:20:00',
-          updated_at: '2024-01-21 15:15:00'
-        },
-        {
-          id: 8,
-          product_name: 'Govee DreamView T1 Pro',
-          brand: 'Govee',
-          model_number: 'H6199',
-          length_mm: 4000,
-          led_count: 120,
-          led_type: 'WS2812B',
-          color_support: 'RGBIC',
-          max_brightness: 1500,
-          power_consumption_w: 36.00,
-          input_voltage_v: 12.0,
-          waterproof_rating: 'IP65',
-          cuttable: true,
-          cut_interval_mm: 100,
-          control_method: 'Wi-Fi, HDMI同步, App',
-          compatible_ecosystems: 'Alexa, Google Assistant',
-          sync_capability: true,
-          adhesive_backing: true,
-          remote_included: true,
-          price: 699.00,
-          currency: 'CNY',
-          stock_quantity: 18,
-          created_at: '2024-01-08 15:50:00',
-          updated_at: '2024-01-22 10:40:00'
-        },
-        {
-          id: 9,
-          product_name: 'Nanoleaf Shapes 三角形智能灯带',
-          brand: 'Nanoleaf',
-          model_number: 'NL42-0003TW-9PK',
-          length_mm: 1500,
-          led_count: 45,
-          led_type: 'SK6812',
-          color_support: 'RGBW',
-          max_brightness: 1000,
-          power_consumption_w: 15.00,
-          input_voltage_v: 24.0,
-          waterproof_rating: 'IP20',
-          cuttable: false,
-          cut_interval_mm: 0,
-          control_method: 'Wi-Fi, App',
-          compatible_ecosystems: 'HomeKit, Alexa, Google Assistant, Samsung SmartThings',
-          sync_capability: true,
-          adhesive_backing: true,
-          remote_included: false,
-          price: 1799.00,
-          currency: 'CNY',
-          stock_quantity: 8,
-          created_at: '2024-01-09 09:10:00',
-          updated_at: '2024-01-23 14:25:00'
-        },
-        {
-          id: 10,
-          product_name: 'Yeelight 智能白光灯带',
-          brand: 'Yeelight',
-          model_number: 'YLDD002',
-          length_mm: 1000,
-          led_count: 30,
-          led_type: 'SMD5050',
-          color_support: '单色白光',
-          max_brightness: 400,
-          power_consumption_w: 8.00,
-          input_voltage_v: 12.0,
-          waterproof_rating: 'IP20',
-          cuttable: true,
-          cut_interval_mm: 50,
-          control_method: '蓝牙, Wi-Fi, App',
-          compatible_ecosystems: 'HomeKit, Alexa, Google Assistant, Xiaomi Home',
-          sync_capability: false,
-          adhesive_backing: true,
-          remote_included: false,
-          price: 89.00,
-          currency: 'CNY',
-          stock_quantity: 80,
-          created_at: '2024-01-10 11:30:00',
-          updated_at: '2024-01-24 12:10:00'
-        },
-        {
-          id: 11,
-          product_name: 'Philips Hue Outdoor LightStrip',
-          brand: 'Philips',
-          model_number: '3216131P7',
-          length_mm: 2000,
-          led_count: 60,
-          led_type: 'SMD5050',
-          color_support: 'RGB',
-          max_brightness: 1200,
-          power_consumption_w: 18.00,
-          input_voltage_v: 24.0,
-          waterproof_rating: 'IP67',
-          cuttable: true,
-          cut_interval_mm: 100,
-          control_method: 'Zigbee, App',
-          compatible_ecosystems: 'HomeKit, Alexa, Google Assistant, Samsung SmartThings',
-          sync_capability: false,
-          adhesive_backing: true,
-          remote_included: false,
-          price: 1299.00,
-          currency: 'CNY',
-          stock_quantity: 12,
-          created_at: '2024-01-11 16:45:00',
-          updated_at: '2024-01-25 10:00:00'
-        },
-        {
-          id: 12,
-          product_name: 'Govee 智能防水灯带',
-          brand: 'Govee',
-          model_number: 'H6110',
-          length_mm: 1000,
-          led_count: 30,
-          led_type: 'SMD5050',
-          color_support: 'RGB',
-          max_brightness: 500,
-          power_consumption_w: 10.00,
-          input_voltage_v: 12.0,
-          waterproof_rating: 'IP67',
-          cuttable: true,
-          cut_interval_mm: 50,
-          control_method: '蓝牙, App, 遥控器',
-          compatible_ecosystems: 'Alexa, Google Assistant',
-          sync_capability: false,
-          adhesive_backing: true,
-          remote_included: true,
-          price: 199.00,
-          currency: 'CNY',
-          stock_quantity: 45,
-          created_at: '2024-01-12 13:20:00',
-          updated_at: '2024-01-25 11:30:00'
-        }
-      ]
+      lights: [],
+      // 加载状态
+      loading: false
     };
   },
   computed: {
@@ -567,30 +225,15 @@ export default {
         result = result.filter(light => light.brand === this.filters.brand);
       }
       
-      // 型号筛选
-      if (this.filters.model_number) {
-        const model = this.filters.model_number.toLowerCase();
-        result = result.filter(light => light.model_number.toLowerCase().includes(model));
+      // 名称筛选
+      if (this.filters.name) {
+        const name = this.filters.name.toLowerCase();
+        result = result.filter(light => light.name.toLowerCase().includes(name));
       }
       
-      // LED类型筛选
-      if (this.filters.led_type) {
-        result = result.filter(light => light.led_type === this.filters.led_type);
-      }
-      
-      // 颜色支持筛选
-      if (this.filters.color_support) {
-        result = result.filter(light => light.color_support === this.filters.color_support);
-      }
-      
-      // 防水等级筛选
-      if (this.filters.waterproof_rating) {
-        result = result.filter(light => light.waterproof_rating === this.filters.waterproof_rating);
-      }
-      
-      // 控制方式筛选
-      if (this.filters.control_method) {
-        result = result.filter(light => light.control_method.includes(this.filters.control_method));
+      // 状态筛选
+      if (this.filters.status) {
+        result = result.filter(light => light.status === parseInt(this.filters.status));
       }
       
       return result;
@@ -605,20 +248,18 @@ export default {
     // 搜索灯带
     searchLights() {
       console.log('搜索灯带:', this.filters);
-      // 这里可以添加搜索逻辑，目前直接使用计算属性过滤
+      this.loadLights();
     },
     
     // 重置筛选条件
     resetFilters() {
       this.filters = {
         brand: '',
-        model_number: '',
-        led_type: '',
-        color_support: '',
-        waterproof_rating: '',
-        control_method: ''
+        name: '',
+        status: ''
       };
       this.currentPage = 1;
+      this.loadLights();
     },
     
     // 切换高级筛选展开状态
@@ -628,16 +269,52 @@ export default {
     
     // 减少库存
     reduceStock(light) {
-      if (light.stock_quantity > 0) {
-        light.stock_quantity--;
-        this.$modal.showToast('库存已减少');
+      if (light.stockQuantity > 0) {
+        const updatedLight = { ...light, stockQuantity: light.stockQuantity - 1 };
+        updateLedStrips(updatedLight).then(res => {
+          if (res.code === 200) {
+            this.$modal.showToast('库存已减少');
+            this.loadLights();
+          } else {
+            this.$modal.showToast('更新库存失败');
+          }
+        });
       }
     },
     
     // 页码变化
     onPageChange(e) {
       this.currentPage = e.current;
+    },
+    
+    // 加载灯带数据
+    loadLights() {
+      this.loading = true;
+      getLedStripsList(this.filters).then(res => {
+        console.log('后端返回数据:', res);
+        if (res && (res.code === 200 || res.code === '200')) {
+          if (res.data && res.data.rows) {
+            this.lights = res.data.rows;
+          } else if (res.rows) {
+            this.lights = res.rows;
+          } else if (res.data) {
+            this.lights = res.data;
+          } else {
+            this.lights = [];
+          }
+        } else {
+          this.$modal.showToast('获取数据失败');
+        }
+      }).catch(error => {
+        console.error('请求错误:', error);
+        this.$modal.showToast('请求失败');
+      }).finally(() => {
+        this.loading = false;
+      });
     }
+  },
+  mounted() {
+    this.loadLights();
   }
 };
 </script>
