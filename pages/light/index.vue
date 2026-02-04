@@ -103,7 +103,7 @@
         <view class="light-specs">
           <view class="spec-item">
             <text class="spec-label">长度:</text>
-            <text class="spec-value">{{ light.lengthMeters || '0' }} m</text>
+            <text class="spec-value">{{ light.lengthMeters || '0' }} cm</text>
           </view>
           <view class="spec-item">
             <text class="spec-label">电压</text>

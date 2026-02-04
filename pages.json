@@ -5,14 +5,29 @@
       "navigationBarTitleText": "灯带管理"
     }
   }, {
+    "path": "pages/light/add",
+    "style": {
+      "navigationBarTitleText": "新增灯带"
+    }
+  }, {
     "path": "pages/tv/index",
     "style": {
       "navigationBarTitleText": "电视管理"
     }
   }, {
+    "path": "pages/tv/add",
+    "style": {
+      "navigationBarTitleText": "新增电视"
+    }
+  }, {
     "path": "pages/stand/index",
     "style": {
       "navigationBarTitleText": "脚架管理"
+    }
+  }, {
+    "path": "pages/stand/add",
+    "style": {
+      "navigationBarTitleText": "新增脚架"
     }
   }, {
     "path": "pages/mine/index",

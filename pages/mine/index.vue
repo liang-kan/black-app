@@ -45,6 +45,21 @@
         </view>
       </view>
 
+      <view class="mine-actions grid col-3 text-center">
+        <view class="action-item" @click="handleAddLight">
+          <view class="iconfont icon-add text-blue icon"></view>
+          <text class="text">新增灯带</text>
+        </view>
+        <view class="action-item" @click="handleAddTv">
+          <view class="iconfont icon-add text-green icon"></view>
+          <text class="text">新增电视</text>
+        </view>
+        <view class="action-item" @click="handleAddStand">
+          <view class="iconfont icon-add text-orange icon"></view>
+          <text class="text">新增脚架</text>
+        </view>
+      </view>
+
       <view class="menu-list">
         <view class="list-cell list-cell-arrow" @click="handleToEditInfo">
           <view class="menu-item-box">
@@ -118,6 +133,15 @@
       },
       handleBuilding() {
         this.$modal.showToast('模块建设中~')
+      },
+      handleAddLight() {
+        this.$tab.navigateTo('/pages/light/add')
+      },
+      handleAddTv() {
+        this.$tab.navigateTo('/pages/tv/add')
+      },
+      handleAddStand() {
+        this.$tab.navigateTo('/pages/stand/add')
       }
     }
   }
